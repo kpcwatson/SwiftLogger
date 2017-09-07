@@ -10,7 +10,7 @@ public protocol MessageLogger {
 }
 
 public enum LoggingLevel: Int, Comparable {
-    case verbose = 0, debug, info, warning, error, off
+    case off = 0, error, warning, info, debug, verbose
 }
 
 // make LoggingLevel conform to Comparable
@@ -21,7 +21,7 @@ public func < (lhs: LoggingLevel, rhs: LoggingLevel) -> Bool {
 /// A convenience struct for accessing defualt logging class.
 public struct Logger {
     
-    /// Set specify lo
+    /// Specify loggingLevel locally or using SL_LOGGING_LEVEL environment variable
     public static var loggingLevel: LoggingLevel = {
         guard let levelString = ProcessInfo.processInfo.environment["SL_LOGGING_LEVEL"],
             let levelInt = Int(levelString),
@@ -40,7 +40,7 @@ public struct Logger {
     }()
     
     public static func verbose(_ items: Any?..., file: String = #file, function: String = #function, line: Int = #line) {
-        guard loggingLevel <= .verbose else { return }
+        guard loggingLevel >= .verbose else { return }
         guard let url = URL(string: file) else { return }
         let fileName = url.deletingPathExtension().lastPathComponent
         let timestamp = dateFormatter.string(from: Date())
@@ -48,22 +48,22 @@ public struct Logger {
     }
     
     public static func debug(_ items: Any?...) {
-        guard loggingLevel <= .debug else { return }
+        guard loggingLevel >= .debug else { return }
         logger.debugMessage(stringify(items))
     }
     
     public static func info(_ items: Any?...) {
-        guard loggingLevel <= .info else { return }
+        guard loggingLevel >= .info else { return }
         logger.infoMessage(stringify(items))
     }
     
     public static func warn(_ items: Any?...) {
-        guard loggingLevel <= .warning else { return }
+        guard loggingLevel >= .warning else { return }
         logger.warningMessage(stringify(items))
     }
     
     public static func error(_ items: Any?...) {
-        guard loggingLevel <= .error else { return }
+        guard loggingLevel >= .error else { return }
         logger.errorMessage(stringify(items))
     }
     

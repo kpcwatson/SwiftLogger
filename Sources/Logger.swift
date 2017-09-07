@@ -9,18 +9,8 @@ public protocol MessageLogger {
     func errorMessage(_ item: Any)
 }
 
-public struct LoggingLevel: OptionSet, Comparable {
-    public static let verbose = LoggingLevel(rawValue: 0)
-    public static let debug = LoggingLevel(rawValue: 1)
-    public static let info = LoggingLevel(rawValue: 2)
-    public static let warning = LoggingLevel(rawValue: 4)
-    public static let error = LoggingLevel(rawValue: 8)
-    
-    public let rawValue: UInt
-    
-    public init(rawValue: UInt) {
-        self.rawValue = rawValue
-    }
+public enum LoggingLevel: Int, Comparable {
+    case verbose = 0, debug, info, warning, error, off
 }
 
 // make LoggingLevel conform to Comparable
@@ -30,7 +20,16 @@ public func < (lhs: LoggingLevel, rhs: LoggingLevel) -> Bool {
 
 /// A convenience struct for accessing defualt logging class.
 public struct Logger {
-    public static var loggingLevel = LoggingLevel.verbose
+    
+    /// Set specify lo
+    public static var loggingLevel: LoggingLevel = {
+        guard let levelString = ProcessInfo.processInfo.environment["SL_LOGGING_LEVEL"],
+            let levelInt = Int(levelString),
+            let level = LoggingLevel(rawValue: levelInt) else {
+                return .info
+        }
+        return level
+    }()
     
     public static let logger: MessageLogger = EmojiLogger()
     
